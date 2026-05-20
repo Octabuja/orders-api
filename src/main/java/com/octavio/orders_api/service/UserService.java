@@ -1,85 +1,116 @@
 package com.octavio.orders_api.service;
 
+import com.octavio.orders_api.dto.CreateUserRequestDTO;
+import com.octavio.orders_api.dto.UpdateUserRequestDTO;
 import com.octavio.orders_api.dto.UserDTO;
 import com.octavio.orders_api.model.User;
 import com.octavio.orders_api.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+// Contiene la lógica de negocio relacionada con usuarios
 @Service
 public class UserService {
 
+    // Acceso al repository para interactuar con MySQL
     private final UserRepository userRepository;
 
+    // Spring inyecta automáticamente el repository
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public User createUser(User user) {
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre es obligatorio");
-        }
-
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email inválido");
-        }
-
-        boolean exists = userRepository.existsByEmail(user.getEmail());
-
-        if (exists) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El email ya existe");
-        }
-
-        return userRepository.save(user);
-    }
-
-    public List<UserDTO> getUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
-
-    }
-
-    public User getUserById (Long id){
-
-        return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")
-                );
-    }
-
-
-    public User updateUser (Long id, User updatedUser){
-
-        User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")
-                );
-
-            user.setName(updatedUser.getName());
-            user.setEmail(updatedUser.getEmail());
-
-            return userRepository.save(user);
-    }
-
-    public void deleteUser (Long id){
-
-        if (!userRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
-        }
-
-        userRepository.deleteById(id);
-    }
-
+    // Convierte una entidad User en un DTO para controlar
+    // qué datos serán enviados al cliente
     public UserDTO toDTO(User user) {
         return new UserDTO(user.getName(), user.getEmail());
     }
 
+    // Obtiene todos los usuarios de la base de datos
+    // y los transforma a DTOs antes de devolverlos
+    public List<UserDTO> getUsers() {
+
+        return userRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    // Crea un nuevo usuario a partir de los datos recibidos desde HTTP
+    public UserDTO createUser(CreateUserRequestDTO request) {
+
+        // El backend crea manualmente la entidad User
+        // a partir del DTO recibido
+        User user = new User();
+
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+
+        // Verifica si el email ya existe en la base de datos
+        boolean exists = userRepository.existsByEmail(user.getEmail());
+
+        if (exists) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El email ya existe"
+            );
+        }
+
+        // Guarda el usuario en MySQL
+        User savedUser = userRepository.save(user);
+
+        return toDTO(savedUser);
+    }
+
+    // Busca un usuario por ID
+    public User getUserById(Long id) {
+
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuario no encontrado"
+                        )
+                );
+    }
+
+    // Actualiza los datos de un usuario existente
+    public UserDTO updateUser(Long id, UpdateUserRequestDTO request) {
+
+        // Busca el usuario actual en la base de datos
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuario no encontrado"
+                        )
+                );
+
+        // Actualiza los campos modificables
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+
+        // Guarda los cambios en MySQL
+        userRepository.save(user);
+        return toDTO(user);
+    }
+
+    // Elimina un usuario por ID
+    public void deleteUser(Long id) {
+
+        // Verifica si el usuario existe antes de eliminarlo
+        if (!userRepository.existsById(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Usuario no encontrado"
+            );
+        }
+
+        // Elimina el usuario de la base de datos
+        userRepository.deleteById(id);
+    }
 }
