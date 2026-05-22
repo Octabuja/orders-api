@@ -1,8 +1,8 @@
 package com.octavio.orders_api.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,14 +10,20 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public Map<String, Object> handleResponseStatusException(ResponseStatusException ex) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String, String> handleValidationErrors(
+            MethodArgumentNotValidException ex) {
 
-        Map<String, Object> error = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
 
-        error.put("message", ex.getReason());
-        error.put("status", ex.getStatusCode().value());
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        errors.put(
+                                error.getField(),
+                                error.getDefaultMessage()
+                        ));
 
-        return error;
+        return errors;
     }
 }
