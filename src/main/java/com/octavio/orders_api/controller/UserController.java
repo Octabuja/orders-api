@@ -6,7 +6,11 @@ import com.octavio.orders_api.dto.UserDTO;
 import com.octavio.orders_api.model.User;
 import com.octavio.orders_api.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -28,8 +32,8 @@ public class UserController {
     // Endpoint GET /users
     // Devuelve una lista de usuarios utilizando DTOs para controlar los datos expuestos
     @GetMapping
-    public List<UserDTO> getUsers() {
-        return userService.getUsers();
+    public Page<UserDTO> getUsers(Pageable pageable) {
+        return userService.getUsers(pageable);
     }
 
     // Endpoint POST /users
@@ -44,7 +48,7 @@ public class UserController {
     // Endpoint GET /users/{id}
     // Busca un usuario por su ID
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
+    public UserDTO getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
@@ -57,7 +61,9 @@ public class UserController {
 
     // Endpoint DELETE /users/{id}
     // Elimina un usuario por ID
+
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }

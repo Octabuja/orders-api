@@ -6,6 +6,9 @@ import com.octavio.orders_api.dto.UserDTO;
 import com.octavio.orders_api.model.User;
 import com.octavio.orders_api.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,12 +35,12 @@ public class UserService {
 
     // Obtiene todos los usuarios de la base de datos
     // y los transforma a DTOs antes de devolverlos
-    public List<UserDTO> getUsers() {
+    public Page<UserDTO> getUsers(Pageable pageable) {
 
-        return userRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
+        Page<User> users =
+                userRepository.findAll(pageable);
+        return users.map(this::toDTO);
+
     }
 
     // Crea un nuevo usuario a partir de los datos recibidos desde HTTP
@@ -67,15 +70,16 @@ public class UserService {
     }
 
     // Busca un usuario por ID
-    public User getUserById(Long id) {
+    public UserDTO getUserById(Long id) {
 
-        return userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() ->
                         new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
                                 "Usuario no encontrado"
                         )
                 );
+        return toDTO(user);
     }
 
     // Actualiza los datos de un usuario existente
