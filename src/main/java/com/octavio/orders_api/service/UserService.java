@@ -30,7 +30,12 @@ public class UserService {
     // Convierte una entidad User en un DTO para controlar
     // qué datos serán enviados al cliente
     public UserDTO toDTO(User user) {
-        return new UserDTO(user.getName(), user.getEmail());
+        return new UserDTO(
+                user.getName(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+                );
     }
 
     // Obtiene todos los usuarios de la base de datos

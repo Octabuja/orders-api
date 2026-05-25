@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -31,8 +33,14 @@ public class UserController {
 
     // Endpoint GET /users
     // Devuelve una lista de usuarios utilizando DTOs para controlar los datos expuestos
+
     @GetMapping
-    public Page<UserDTO> getUsers(Pageable pageable) {
+    public Page<UserDTO> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
         return userService.getUsers(pageable);
     }
 
