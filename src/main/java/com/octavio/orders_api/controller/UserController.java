@@ -52,6 +52,15 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    // Endpoint GET /users/email/{email}
+    //Busca un usuario por su email
+    @GetMapping("/email/{email}")
+    public UserDTO getUserByEmail(
+            @PathVariable String email) {
+
+        return userService.getUserByEmail(email);
+    }
+
     // Endpoint PUT /users/{id}
     // Actualiza un usuario existente
     @PutMapping("/{id}")

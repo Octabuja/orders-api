@@ -82,6 +82,19 @@ public class UserService {
         return toDTO(user);
     }
 
+    // Busca un usuario por Email
+    public UserDTO getUserByEmail(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuario no encontrado"
+                        )
+                );
+        return toDTO(user);
+    }
+
     // Actualiza los datos de un usuario existente
     public UserDTO updateUser(Long id, UpdateUserRequestDTO request) {
 
